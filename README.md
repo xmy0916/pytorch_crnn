@@ -8,3 +8,7 @@
 
 # 博客地址
 [从零写CRNN](https://blog.csdn.net/qq_37668436/article/details/113642808)
+
+# 项目运行
+- 修改config/config.yml文件中的CHAR_FILE和JSON_FILE参数到你的数据集路径
+- python3 train.py --cfg config/config.yml 运行训练
