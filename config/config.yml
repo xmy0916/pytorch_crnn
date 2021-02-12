@@ -5,6 +5,7 @@ SAVE_FREQ: 1
 EVAL_FREQ: 1
 PIN_MEMORY: False
 OUTPUT_DIR: 'output'
+BLANK_CHAR: '-'
 
 CUDNN:
   BENCHMARK: True

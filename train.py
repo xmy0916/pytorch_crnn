@@ -100,8 +100,11 @@ if __name__ == "__main__":
                   preds_size = torch.IntTensor([preds.size(0)] * batch_size)
                   loss = criterion(preds, text, preds_size, length)
                   # 后处理解码
+                  print("网络输出的preds的shape:",preds.cpu().detach().shape)
                   _, preds = preds.max(2)
+                  print("max(2)的shape:",preds.cpu().detach().shape)
                   preds = preds.transpose(1, 0).contiguous().view(-1)
+                  print("transpose的shape:",preds.cpu().detach().shape)
                   sim_preds = decode(preds.data, preds_size.data, config.DICT,raw=False)
                   for pred, target in zip(sim_preds, labels):
                     if pred == target:
@@ -112,7 +115,9 @@ if __name__ == "__main__":
           raw_preds = decode(preds.data, preds_size.data, config.DICT, raw=True)[:config.TEST.NUM_TEST_DISP]
           for raw_pred, pred, gt in zip(raw_preds, sim_preds, labels):
               print('%-20s => %-20s, gt: %-20s' % (raw_pred, pred, gt))
-
+          print("preds:",preds.cpu().detach().numpy())
+          print("preds_shape:",preds.cpu().detach().shape)
+          print("dict:",config.DICT)
           now_acc = n_correct * 1.0 / test_num
           print("best_acc:{} correct:{}".format(now_acc,n_correct))
           if now_acc >= best_acc:

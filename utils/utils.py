@@ -12,6 +12,7 @@ def load_yml(filePath):
         char_file = config.DATASET.CHAR_FILE
     with open(char_file, 'r',encoding="utf-8") as file:
         config.DICT = [char.strip() for char in file.readlines()]
+        config.DICT.insert(0,config.BLANK_CHAR)
         config.MODEL.NUM_CLASSES = len(config.DICT)
     return config
 
