@@ -9,7 +9,6 @@
 # 数据集
 本文使用的是MLT2017的数据集，下载地址：[https://download.csdn.net/download/qq_37668436/15045746](https://download.csdn.net/download/qq_37668436/15045746)
 
-字典文件第一行需要修改一下加一个字符"-"，这个是用来当空白字符也是为了显示用~
 
 # 博客地址
 [从零写CRNN](https://blog.csdn.net/qq_37668436/article/details/113642808)
