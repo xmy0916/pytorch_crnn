@@ -14,6 +14,7 @@
 [从零写CRNN](https://blog.csdn.net/qq_37668436/article/details/113642808)
 
 # 项目运行
+- python3 -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 - 修改config/config.yml文件中的CHAR_FILE和JSON_FILE参数到你的数据集路径
 - python3 train.py --cfg config/config.yml 运行训练
 - 或者 bash setup.sh运行训练该命令会在后台运行，并且保存训练的输出到log.txt文件中
