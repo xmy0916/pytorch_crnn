@@ -58,22 +58,27 @@ if __name__ == "__main__":
             optimizer, config.TRAIN.LR_STEP,
             config.TRAIN.LR_FACTOR, last_epoch-1
         )
-
-    criterion = torch.nn.CTCLoss()
+    if config.ATTENTION.ENABLE:
+        criterion = torch.nn.NLLLoss()
+    else:
+        criterion = torch.nn.CTCLoss()
     # 训练
     best_acc = 0.0
     for epoch in range(last_epoch,config.TRAIN.END_EPOCH):
       model.train()
       for i, (inp, idx) in enumerate(train_loader):
-          # 前馈
+          # 前馈,计算loss
           inp = inp.to(device)
-          preds = model(inp).to(device)
-          # 计算loss
           labels = get_batch_label(train_dataset, idx)
           batch_size = inp.size(0)
           text, length = encode(config.DICT,labels)
+          preds = model(inp,length).cpu()
           preds_size = torch.IntTensor([preds.size(0)] * batch_size)
-          loss = criterion(preds, text, preds_size, length)
+          if config.ATTENTION.ENABLE:
+              loss = criterion(preds, text)
+          else:
+              loss = criterion(preds, text, preds_size, length)
+
           # 反馈
           optimizer.zero_grad()
           loss.backward()
@@ -90,45 +95,49 @@ if __name__ == "__main__":
           test_num = len(val_loader) * config.TEST.BATCH_SIZE_PER_GPU
           with torch.no_grad():
               for i, (inp, idx) in enumerate(val_loader):
-                  # 计算前馈
+                  # 计算前馈,计算loss
                   inp = inp.to(device)
-                  preds = model(inp).cpu()
-                  # 计算loss
                   labels = get_batch_label(val_dataset, idx)
                   batch_size = inp.size(0)
                   text, length = encode(config.DICT,labels)
+                  preds = model(inp,length).cpu()
                   preds_size = torch.IntTensor([preds.size(0)] * batch_size)
-                  loss = criterion(preds, text, preds_size, length)
+                  if config.ATTENTION.ENABLE:
+                      loss = criterion(preds, text)
+                  else:
+                      loss = criterion(preds, text, preds_size, length)
+
                   # 后处理解码
-                  print("网络输出的preds的shape:",preds.cpu().detach().shape)
-                  _, preds = preds.max(2)
-                  print("max(2)的shape:",preds.cpu().detach().shape)
-                  preds = preds.transpose(1, 0).contiguous().view(-1)
-                  print("transpose的shape:",preds.cpu().detach().shape)
-                  sim_preds = decode(preds.data, preds_size.data, config.DICT,raw=False)
-                  for pred, target in zip(sim_preds, labels):
-                    if pred == target:
-                      n_correct += 1
+                  if config.ATTENTION.ENABLE:
+                      _, preds = preds.max(1)
+                      index = 0
+                      for label in labels:
+                          pre = "".join(str(preds[index:index + len(label)]))
+                          index += len(label)
+                          if pre == label:
+                              n_correct += 1
+                  else:
+                      _, preds = preds.max(2)
+                      preds = preds.transpose(1, 0).contiguous().view(-1)
+                      sim_preds = decode(preds.data, preds_size.data, config.DICT,raw=False)
+                      for pred, target in zip(sim_preds, labels):
+                        if pred == target:
+                          n_correct += 1
 
               
           # 抓一个batch来显示
-          raw_preds = decode(preds.data, preds_size.data, config.DICT, raw=True)[:config.TEST.NUM_TEST_DISP]
-          for raw_pred, pred, gt in zip(raw_preds, sim_preds, labels):
-              print('%-20s => %-20s, gt: %-20s' % (raw_pred, pred, gt))
-          print("preds:",preds.cpu().detach().numpy())
-          print("preds_shape:",preds.cpu().detach().shape)
-          print("dict:",config.DICT)
+          if not config.ATTENTION.ENABLE:
+              raw_preds = decode(predata, preds_size.data, config.DICT, raw=True)[:config.TEST.NUM_TEST_DISP]
+              for raw_pred, pred, gt in zip(raw_preds, sim_preds, labels):
+                  print('%-20s => %-20s, gt: %-20s' % (raw_pred, pred, gt))
           now_acc = n_correct * 1.0 / test_num
-          print("best_acc:{} correct:{}".format(now_acc,n_correct))
+          print("best_acc:{} correct:{} total:{}".format(now_acc,n_correct,test_num))
           if now_acc >= best_acc:
               torch.save(
-                    {
-                        "state_dict": model.state_dict(),
-                        "epoch": epoch + 1,
-                        # "optimizer": optimizer.state_dict(),
-                        # "lr_scheduler": lr_scheduler.state_dict(),
-                        "best_acc": best_acc,
-                    },  os.path.join(config.OUTPUT_DIR, "checkpoint_{}_acc_{:.4f}.pth".format(epoch, now_acc)))
+                        {
+                            "state_dict": model.state_dict(),
+                            "epoch": epoch + 1,
+                            "best_acc": best_acc,
+                        },  os.path.join(config.OUTPUT_DIR, "checkpoint_{}_acc_{:.4f}.pth".format(epoch, now_acc)))
               best_acc = now_acc
               print("save_model!")
-              

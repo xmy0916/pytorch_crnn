@@ -25,6 +25,7 @@ class OCRDataset(data.Dataset):
             contents = file.readlines()
             for c in contents:
                 imgname = c.split('\t')[0]
+                
                 string = c.split('\t')[1].replace("\n","")
                 self.labels.append({imgname: string})
 

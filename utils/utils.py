@@ -86,7 +86,7 @@ def encode(char_dict,text):
                 result.append(index)
         text = result
         #print(result)
-        return (torch.IntTensor(text), torch.IntTensor(length))
+        return (torch.LongTensor(text), torch.IntTensor(length))
 
 def decode(t, length,alphabet, raw=False):
         """Decode encoded texts back into strs.

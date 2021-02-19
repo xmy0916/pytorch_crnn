@@ -27,7 +27,7 @@ TRAIN:
   BATCH_SIZE_PER_GPU: 32
   SHUFFLE: True
   BEGIN_EPOCH: 0
-  END_EPOCH: 100
+  END_EPOCH: 10000
   RESUME:
     IS_RESUME: False
     FILE: ''
@@ -59,3 +59,6 @@ MODEL:
     W: 160   # resized width: 160
   NUM_CLASSES: 0
   NUM_HIDDEN: 256
+
+ATTENTION:
+  ENABLE: True
