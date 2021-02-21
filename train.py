@@ -50,6 +50,7 @@ if __name__ == "__main__":
     model = crnn.get_crnn(config)
     model = model.to(device)
     model_info(model)
+    print(model)
 
 
     optimizer = get_optimizer(config, model)
@@ -127,7 +128,7 @@ if __name__ == "__main__":
               
           # 抓一个batch来显示
           if not config.ATTENTION.ENABLE:
-              raw_preds = decode(predata, preds_size.data, config.DICT, raw=True)[:config.TEST.NUM_TEST_DISP]
+              raw_preds = decode(preds.data, preds_size.data, config.DICT, raw=True)[:config.TEST.NUM_TEST_DISP]
               for raw_pred, pred, gt in zip(raw_preds, sim_preds, labels):
                   print('%-20s => %-20s, gt: %-20s' % (raw_pred, pred, gt))
           now_acc = n_correct * 1.0 / test_num
